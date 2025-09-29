@@ -1,0 +1,2 @@
+# hypeclip.ai
+NO NEED 
