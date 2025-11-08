@@ -47,9 +47,7 @@ https://www.youtube.com/watch?v=GE-lAftuQgc
 https://www.youtube.com/watch?v=kD8f0ixy4u4
 https://www.youtube.com/watch?v=SkcO47UDzzY
 https://www.youtube.com/watch?v=2XkjXTjVp2E
-<<<<<<< Updated upstream
 https://www.youtube.com/watch?v=kLS5Cg_yNdM
-=======
 https://www.youtube.com/watch?v=kLS5Cg_yNdM
 https://www.youtube.com/watch?v=kCyAZ6wYg8w
 https://www.youtube.com/watch?v=vmFXe0gYnZE
@@ -95,4 +93,3 @@ https://www.youtube.com/watch?v=Iq_r7IcNmUk
 https://www.youtube.com/watch?v=g6tlNyr5sl8
 https://www.youtube.com/watch?v=eOznHwn29Tk
 https://www.youtube.com/watch?v=MchihnInAMU
->>>>>>> Stashed changes
