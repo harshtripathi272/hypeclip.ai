@@ -138,10 +138,37 @@ def process_video(url, max_cap=300):
     # whisperX
     segments = whisperx_transcribe(audio_path)
 
+    # build full transcript text
+    transcript_text = "\n".join(seg.get("text", "").strip() for seg in segments)
+
     # select windows
     windows = select_windows(duration, sr, y)
 
     # pick sentences
     final = select_sentences(segments, windows, max_cap=max_cap)
 
-    return final, vid
+    return final, vid, transcript_text
+
+if __name__ == "__main__":
+    import argparse
+    import json
+
+    parser = argparse.ArgumentParser(description="Process a video URL and extract sentence segments")
+    parser.add_argument("url", help="YouTube (or similar) URL to download and process")
+    parser.add_argument("--max-cap", type=int, default=300, help="Maximum number of sentences to return")
+    args = parser.parse_args()
+
+    final, vid, transcript = process_video(args.url, max_cap=args.max_cap)
+
+    os.makedirs("output", exist_ok=True)
+    out_path = f"output/{vid}_segments.json"
+    with open(out_path, "w", encoding="utf-8") as f:
+        json.dump({"vid": vid, "segments": final}, f, ensure_ascii=False, indent=2)
+
+    # save plain text transcript
+    txt_path = f"output/{vid}_transcript.txt"
+    with open(txt_path, "w", encoding="utf-8") as f:
+        f.write(transcript)
+
+    print(f"Saved {len(final)} segments to {out_path}")
+    print(f"Saved transcript to {txt_path}")
