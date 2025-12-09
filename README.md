@@ -1,14 +1,14 @@
 <!-- PROJECT LOGO -->
 <p align="center">
-  <img src="https://via.placeholder.com/200x200.png?text=HypeReel+Logo" alt="Logo" width="160">
+  <img src="https://via.placeholder.com/200x200.png?text=HypeClipAI+Logo" alt="Logo" width="160">
 </p>
 
-<h1 align="center">🎬 HypeReel</h1>
+<h1 align="center">🎬 HypeClipAI</h1>
 
 <p align="center">
   AI-powered platform that transforms long-form videos into viral short-form Reels using multi-modal analysis.
   <br />
-  <a href="https://hypereel.example.com">🌐 Website</a> •
+  <a href="https://HypeClipAI.example.com">🌐 Website</a> •
   <a href="#features">✨ Features</a> •
   <a href="#how-it-works">⚙️ How It Works</a> •
   <a href="#getting-started">🚀 Getting Started</a> •
@@ -19,9 +19,9 @@
 
 ## 🚀 Overview
 
-**HypeReel** is an AI-driven web & mobile application built to automatically extract the most compelling, high-energy moments from long videos and convert them into short, viral-ready clips for platforms like Instagram Reels, TikTok, and YouTube Shorts.
+**HypeClipAI** is an AI-driven web & mobile application built to automatically extract the most compelling, high-energy moments from long videos and convert them into short, viral-ready clips for platforms like Instagram Reels, TikTok, and YouTube Shorts.
 
-Using advanced **NLP**, **audio emotion analysis**, and **visual understanding**, HypeReel intelligently detects hooks, excitement peaks, gestures, scene cuts, and more to produce polished highlight clips.
+Using advanced **NLP**, **audio emotion analysis**, and **visual understanding**, HypeClipAI intelligently detects hooks, excitement peaks, gestures, scene cuts, and more to produce polished highlight clips.
 
 ---
 
@@ -95,7 +95,7 @@ Evaluates clips based on:
 
 ## 📥 Installation
 
-1. Visit **https://hypereel.example.com**  
+1. Visit **https://HypeClipAI.example.com**  
 2. Sign up or log in  
 3. Upload a video  
 4. Set clip length settings (min/max)  
@@ -107,7 +107,7 @@ Evaluates clips based on:
 
 1. Upload a long-form video  
 2. Configure clip settings  
-3. Allow HypeReel to analyze + process  
+3. Allow HypeClipAI to analyze + process  
 4. Preview generated clips  
 5. Export for social media (Reels/TikTok/Shorts)  
 
@@ -144,7 +144,7 @@ See `LICENSE` for more details.
 ## 📬 Contact
 
 **Support & inquiries:**  
-📧 [support@hypereel.example.com](mailto:support@hypereel.example.com)
+📧 [support@HypeClipAI.example.com](mailto:support@HypeClipAI.example.com)
 
 ---
 
