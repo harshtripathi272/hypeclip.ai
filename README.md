@@ -1,6 +1,6 @@
 <!-- PROJECT LOGO -->
 <p align="center">
-  <img src="https://via.placeholder.com/200x200.png?text=HypeClipAI+Logo" alt="Logo" width="160">
+  <img src="logo.jpeg?text=HypeClipAI+Logo" alt="Logo" width="260">
 </p>
 
 <h1 align="center">🎬 HypeClipAI</h1>
