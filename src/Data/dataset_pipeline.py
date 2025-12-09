@@ -3,10 +3,16 @@ import random
 import librosa
 import yt_dlp
 import numpy as np
+import json
 from pathlib import Path
 from typing import List, Tuple
 
-# ---------- 1) Download Audio --------------------
+
+def read_urls(file_path: str):
+    with open(file_path, "r") as f:
+        urls = [line.strip() for line in f if line.strip()]
+    return urls
+
 def download_audio(url: str, out_dir="downloads"):
     os.makedirs(out_dir, exist_ok=True)
 
@@ -28,8 +34,6 @@ def download_audio(url: str, out_dir="downloads"):
     return audio_path, vid
 
 
-
-# ---------- 2) Run WhisperX ---------------------
 def whisperx_transcribe(audio_path, device="cuda"):
     import whisperx
     model = whisperx.load_model("large-v2", device)
@@ -45,20 +49,18 @@ def whisperx_transcribe(audio_path, device="cuda"):
         audio_path, device
     )
 
-    # return just sentence-level
-    return aligned["segments"]   # <-- already have start/end/text
+    return aligned["segments"]
 
 
-# ---------- 3) Select windows -------------------
 def select_windows(duration, sr, y, window_sec=120):
     windows = []
 
-    # ---- Window 1: first 2 min
+
     windows.append((0, min(window_sec, duration)))
 
-    # ---- Window 2: mid windows
+
     mid_start = duration * 0.20
-    mid_end   = duration * 0.80
+    mid_end = duration * 0.80
     if mid_end - mid_start > window_sec:
         possible = np.arange(mid_start, mid_end-window_sec, window_sec)
         random_mid = random.sample(
@@ -68,9 +70,8 @@ def select_windows(duration, sr, y, window_sec=120):
         for st in random_mid:
             windows.append((st, st+window_sec))
 
-    # ---- Window 3: high-energy window
-    frame_len = int(sr*0.05)
-    hop_len   = int(sr*0.05)
+    frame_len = int(sr * 0.05)
+    hop_len = int(sr * 0.05)
     rmse = librosa.feature.rms(
         y=y,
         frame_length=frame_len,
@@ -83,22 +84,21 @@ def select_windows(duration, sr, y, window_sec=120):
     )
     best_energy = -1
     best_start = 0
-    frames_per_win = int(window_sec / (hop_len/sr))
+    frames_per_win = int(window_sec / (hop_len / sr))
 
-    for i in range(len(times)-frames_per_win):
-        eng = rmse[i: i+frames_per_win].sum()
+    for i in range(len(times) - frames_per_win):
+        eng = rmse[i: i + frames_per_win].sum()
         if eng > best_energy:
             best_energy = eng
             best_start = times[i]
     windows.append((best_start, best_start + window_sec))
 
-    # ---- Window 4: last 2 min
-    windows.append((max(0, duration-window_sec), duration))
+    windows.append((max(0, duration - window_sec), duration))
 
     return windows
 
 
-# ---------- 4) Window sentence filter -----------
+
 def get_sentences_in_window(segments, st, ed):
     out = []
     for seg in segments:
@@ -107,7 +107,6 @@ def get_sentences_in_window(segments, st, ed):
     return out
 
 
-# ---------- 5) Main selection & cap -------------
 def select_sentences(segments, windows, max_cap=300):
     selected = []
     seen = set()
@@ -120,55 +119,78 @@ def select_sentences(segments, windows, max_cap=300):
                 seen.add(key)
                 selected.append(c)
 
-    # If > cap, random sample
     if len(selected) > max_cap:
         selected = random.sample(selected, max_cap)
 
     return selected
 
 
-# ---------- MAIN PIPELINE -----------------------
 def process_video(url, max_cap=300):
     audio_path, vid = download_audio(url)
 
-    # load audio
     y, sr = librosa.load(audio_path, sr=None)
     duration = librosa.get_duration(y=y, sr=sr)
 
-    # whisperX
     segments = whisperx_transcribe(audio_path)
 
-    # build full transcript text
-    transcript_text = "\n".join(seg.get("text", "").strip() for seg in segments)
-
-    # select windows
     windows = select_windows(duration, sr, y)
 
-    # pick sentences
     final = select_sentences(segments, windows, max_cap=max_cap)
 
-    return final, vid, transcript_text
+    return final, vid
 
-if __name__ == "__main__":
-    import argparse
-    import json
 
-    parser = argparse.ArgumentParser(description="Process a video URL and extract sentence segments")
-    parser.add_argument("url", help="YouTube (or similar) URL to download and process")
-    parser.add_argument("--max-cap", type=int, default=300, help="Maximum number of sentences to return")
-    args = parser.parse_args()
 
-    final, vid, transcript = process_video(args.url, max_cap=args.max_cap)
+urls = read_urls("short2.txt")
 
-    os.makedirs("output", exist_ok=True)
-    out_path = f"output/{vid}_segments.json"
-    with open(out_path, "w", encoding="utf-8") as f:
-        json.dump({"vid": vid, "segments": final}, f, ensure_ascii=False, indent=2)
 
-    # save plain text transcript
-    txt_path = f"output/{vid}_transcript.txt"
-    with open(txt_path, "w", encoding="utf-8") as f:
-        f.write(transcript)
+all_data = []
 
-    print(f"Saved {len(final)} segments to {out_path}")
-    print(f"Saved transcript to {txt_path}")
+
+for url in urls:
+    try:
+        segments, vid_id = process_video(url)
+        
+ 
+        for seg in segments:
+            seg["video_id"] = vid_id
+        
+        
+        all_data.extend(segments)
+        print(f"✅ Processed video: {vid_id}, segments: {len(segments)}")
+    
+    except Exception as e:
+        print(f"❌ Failed to process {url}: {e}")
+
+
+import csv
+
+
+output_file_jsonl = "output/dataset_long_1.jsonl"
+with open(output_file_jsonl, "w", encoding="utf-8") as f:
+    for seg in all_data:
+        f.write(json.dumps(seg, ensure_ascii=False) + "\n")
+
+
+output_file_json = "output/dataset_long_1.json"
+with open(output_file_json, "w", encoding="utf-8") as f:
+    json.dump(all_data, f, ensure_ascii=False, indent=2)
+
+output_file_csv = "output/dataset_long_1.csv"
+with open(output_file_csv, "w", encoding="utf-8", newline="") as f:
+    writer = csv.DictWriter(f, fieldnames=["video_id", "start", "end", "text"])
+    writer.writeheader()
+    for seg in all_data:
+        writer.writerow({
+            "video_id": seg.get("video_id", ""),
+            "start": seg.get("start", ""),
+            "end": seg.get("end", ""),
+            "text": seg.get("text", "")
+        })
+
+output_file_txt = "output/dataset_long_1.txt"
+with open(output_file_txt, "w", encoding="utf-8") as f:
+    for seg in all_data:
+        f.write(seg.get("text", "") + "\n")
+
+print(f"✅ Dataset saved in JSONL, JSON, CSV, and TXT formats")
