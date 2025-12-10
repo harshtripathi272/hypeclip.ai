@@ -141,7 +141,7 @@ def process_video(url, max_cap=300):
 
 
 
-urls = read_urls("url.txt")
+urls = read_urls("short2.txt")
 
 
 all_data = []
@@ -166,17 +166,17 @@ for url in urls:
 import csv
 
 
-output_file_jsonl = "output/dataset_long.jsonl"
+output_file_jsonl = "output/dataset_long_1.jsonl"
 with open(output_file_jsonl, "w", encoding="utf-8") as f:
     for seg in all_data:
         f.write(json.dumps(seg, ensure_ascii=False) + "\n")
 
 
-output_file_json = "output/dataset_long.json"
+output_file_json = "output/dataset_long_1.json"
 with open(output_file_json, "w", encoding="utf-8") as f:
     json.dump(all_data, f, ensure_ascii=False, indent=2)
 
-output_file_csv = "output/dataset_long.csv"
+output_file_csv = "output/dataset_long_1.csv"
 with open(output_file_csv, "w", encoding="utf-8", newline="") as f:
     writer = csv.DictWriter(f, fieldnames=["video_id", "start", "end", "text"])
     writer.writeheader()
@@ -188,10 +188,9 @@ with open(output_file_csv, "w", encoding="utf-8", newline="") as f:
             "text": seg.get("text", "")
         })
 
-output_file_txt = "output/dataset_long.txt"
+output_file_txt = "output/dataset_long_1.txt"
 with open(output_file_txt, "w", encoding="utf-8") as f:
     for seg in all_data:
         f.write(seg.get("text", "") + "\n")
 
 print(f"✅ Dataset saved in JSONL, JSON, CSV, and TXT formats")
-
