@@ -133,7 +133,7 @@ Contributions are welcome!
 5. Open a pull request 🎉
 
 ---
-
+```python version <=3.10```
 ## 📄 License
 
 Distributed under the **MIT License**.  
