@@ -1,4 +1,14 @@
 import os
+import torch
+import omegaconf
+
+torch.serialization.add_safe_globals([
+    omegaconf.listconfig.ListConfig,
+    omegaconf.dictconfig.DictConfig,
+    omegaconf.base.ContainerMetadata,
+])
+
+
 import random
 import librosa
 import yt_dlp
@@ -141,7 +151,7 @@ def process_video(url, max_cap=300):
 
 
 
-urls = read_urls("short2.txt")
+urls = read_urls("url.txt")
 
 
 all_data = []
