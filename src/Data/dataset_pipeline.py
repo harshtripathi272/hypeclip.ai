@@ -26,6 +26,25 @@ def read_urls(file_path: str):
 def download_audio(url: str, out_dir="downloads"):
     os.makedirs(out_dir, exist_ok=True)
 
+    # Attempt to extract ID quickly to check if file exists
+    vid_id = None
+    try:
+        if "v=" in url:
+            vid_id = url.split("v=")[1].split("&")[0]
+        elif "youtu.be/" in url:
+            vid_id = url.split("youtu.be/")[1].split("?")[0]
+        elif "shorts/" in url:
+            vid_id = url.split("shorts/")[1].split("?")[0]
+    except:
+        pass
+
+    # If we guessed the ID and the file exists, SKIP download!
+    if vid_id:
+        audio_path = f"{out_dir}/{vid_id}.wav"
+        if os.path.exists(audio_path):
+            print(f"🎬 Found existing audio: {audio_path} (Skipping download)")
+            return audio_path, vid_id
+
     ydl_opts = {
         'format': 'bestaudio/best',
         'postprocessors': [{
@@ -154,28 +173,67 @@ def process_video(url, max_cap=300):
 urls = read_urls("url.txt")
 
 
+# Load existing progress to support resuming
+processed_ids = set()
+output_file_jsonl = "output/dataset_long_1.jsonl"
+os.makedirs("output", exist_ok=True)
+
+if os.path.exists(output_file_jsonl):
+    with open(output_file_jsonl, "r", encoding="utf-8") as f:
+        for line in f:
+            try:
+                data = json.loads(line)
+                processed_ids.add(data.get("video_id"))
+            except:
+                continue
+
+# Open in append mode ("a") to save incrementally
+with open(output_file_jsonl, "a", encoding="utf-8") as f_jsonl:
+    for url in urls:
+        # Optimization: Extract ID from URL directly to avoid network call
+        try:
+            if "v=" in url:
+                vid_id = url.split("v=")[1].split("&")[0]
+            elif "youtu.be/" in url:
+                vid_id = url.split("youtu.be/")[1].split("?")[0]
+            elif "shorts/" in url:
+                vid_id = url.split("shorts/")[1].split("?")[0]
+            else:
+                # Fallback to yt-dlp if URL format is complex
+                with yt_dlp.YoutubeDL({'quiet': True}) as ydl:
+                    info = ydl.extract_info(url, download=False)
+                    vid_id = info['id']
+            
+            if vid_id in processed_ids:
+                print(f"⏩ Skipping {vid_id} (Already processed)")
+                continue
+
+            segments, vid_id = process_video(url)
+            
+            for seg in segments:
+                seg["video_id"] = vid_id
+                # Save each segment to JSONL immediately
+                f_jsonl.write(json.dumps(seg, ensure_ascii=False) + "\n")
+            
+            f_jsonl.flush() # Ensure it's written to disk
+            print(f"✅ Processed and SAVED video: {vid_id}, segments: {len(segments)}")
+            
+        except Exception as e:
+            print(f"❌ Failed to process {url}: {e}")
+
+# After the loop, generate the other descriptive formats from the JSONL file
+print("📊 Generating CSV, JSON, and TXT summaries from saved data...")
 all_data = []
-
-
-for url in urls:
-    try:
-        segments, vid_id = process_video(url)
-        
- 
-        for seg in segments:
-            seg["video_id"] = vid_id
-        
-        
-        all_data.extend(segments)
-        print(f"✅ Processed video: {vid_id}, segments: {len(segments)}")
-    
-    except Exception as e:
-        print(f"❌ Failed to process {url}: {e}")
+if os.path.exists(output_file_jsonl):
+    with open(output_file_jsonl, "r", encoding="utf-8") as f:
+        for line in f:
+            all_data.append(json.loads(line))
 
 
 import csv
 
 
+os.makedirs("output", exist_ok=True)
 output_file_jsonl = "output/dataset_long_1.jsonl"
 with open(output_file_jsonl, "w", encoding="utf-8") as f:
     for seg in all_data:
